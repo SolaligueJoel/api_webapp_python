@@ -14,11 +14,15 @@ __email__ = "alumnos@inove.com.ar"
 __version__ = "1.2"
 
 
+from flask.wrappers import Response
 import sqlalchemy
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import func
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import io
 
 from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
@@ -71,3 +75,29 @@ def report(limit=0, offset=0):
         json_result_list.append(json_result)
 
     return json_result_list
+
+
+def age_report(nationality):
+    user_nationality = db.session.query(Persona).filter(Persona.nationality == nationality.lower()).all()
+    
+    
+    list_name = [x.name for x in user_nationality]
+    list_age = [x.age for x in user_nationality]
+    new_dict = dict(zip(list_name,list_age))
+    
+    
+    fig = Figure()
+    fig.tight_layout()
+    
+    ax = fig.add_subplot()
+    ax.set_title("Edades por Nacionalidad")
+    ax.bar(new_dict.keys(),new_dict.values())
+    ax.set_facecolor("bisque")
+    ax.set_xlabel("Ids")
+    ax.set_ylabel("Edades")
+
+    output = io.BytesIO()
+    FigureCanvas(fig).print_png(output)
+    return Response(output.getvalue(),mimetype='image/png')
+
+

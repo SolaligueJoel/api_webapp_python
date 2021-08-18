@@ -117,13 +117,13 @@ def personas():
                     data como parámetro</h3>'''
         # Sacar esta linea cuando haya implementado el return
         # con render template
-        return result 
+        return render_template('tabla.html',data = data) 
     except:
         return jsonify({'trace': traceback.format_exc()})
 
 
-@app.route("/comparativa")
-def comparativa():
+@app.route("/comparativa/<nationality>")
+def comparativa(nationality):
     try:
         # Mostrar todos los registros en un gráfico
         result = '''<h3>Implementar una función en persona.py
@@ -138,7 +138,7 @@ def comparativa():
                     como parámetro estático o dinámico que indique la nacionalidad
                     que se desea estudiar sus edades ingresadas (filtrar las edades
                     por la nacionalidad ingresada)</h3>'''
-        return (result)
+        return persona.age_report(nationality)
     except:
         return jsonify({'trace': traceback.format_exc()})
 
@@ -162,6 +162,14 @@ def registro():
             # persona.insert(name, int(age), nationality)
 
             # Como respuesta al POST devolvemos la tabla de valores
+            
+            name = str(request.form.get('name'))
+            age = str(request.form.get('age'))
+            nationality = str(request.form.get('nationality'))
+            
+            if (name is None or nationality is None or age is None or age.isdigit() is False):
+                return Response(status=400)
+            persona.insert(name,int(age),nationality.lower())
             return redirect(url_for('personas'))
         except:
             return jsonify({'trace': traceback.format_exc()})
